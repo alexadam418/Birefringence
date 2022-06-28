@@ -25,6 +25,7 @@ send_command(gcode[2])
 for i in range(3, npoints + 3):
     msg, act1 = send_command(gcode[i])
     print(msg)
+    time.sleep(1)
     while True:
         wait = is_moving()
         if wait == "false":
@@ -42,10 +43,13 @@ if act1 == 1:
         for i in range(3, npoints + 3):
             msg, act2 = send_command(gcode[i])
             print(msg)
+            time.sleep(1)
             while True:
                 wait = is_moving()
                 if wait == "false":
                     break
+                else:
+                    time.sleep(1)
             r_1[i - 3] = take_measurement(1)
             if act2 == 0:
                 break
@@ -62,11 +66,18 @@ if act1 == 1:
             zq = np.linspace(box_start[1], box_start[1] + 20 + diameter, newpoints)
             interp_data = interpolate.interp2d(x_values, z_values, measured_birefringence, kind="linear")
             plot_data = interp_data(xq, zq)
+            plt.figure(1)
             plt.subplot()
             plt.pcolormesh(xq, zq, plot_data, cmap=cm.jet)
             plt.colorbar()
+            plt.clim(0, 1e-7)
             plt.savefig("birefringence.png")
             send_notif2(user_email)
+            plt.figure(2)
+            plt.scatter(x_loc, z_loc, c=np.flip(delta_n), cmap=cm.jet)
+            plt.colorbar()
+            plt.clim(0, 1e-7)
+            plt.savefig("birefringence_scatter.png")
         else:
             print("Problem in Second Measurement")
     else:
