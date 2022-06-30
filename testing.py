@@ -1,26 +1,20 @@
-import smtplib
-import ssl
-from email.mime.text import MIMEText
-from email.mime.application import MIMEApplication
-from email.mime.multipart import MIMEMultipart
+import requests
+import time
+import json
 
-ctx = ssl.create_default_context()
-password = "qojxkexwarkaubtm"
-sender = "birefringenceprogram@gmail.com"
-receiver = "alexadam418@gmail.com"
-message = MIMEMultipart("mixed")
-message["Subject"] = "Birefringence Scan Finished"
-message["From"] = sender
-message["To"] = receiver
+api_key = "78BE310B9A1C4098815EEA0ECEED0B35"
+command = 'G1 X100 Z65.11 F200'
+api_url = 'http://192.168.1.2/api/printer?exclude=temperature,sd'
 
-message.attach(MIMEText("Birefringence Scan Finished", "plain"))
-filename = r"C:\Users\jadam\PycharmProjects\pythonProject\testdata.png"
-with open(filename, "rb") as f:
-    file = MIMEApplication(f.read())
-disposition = f"attachment; filename={filename}"
-file.add_header("Content-Disposition", disposition)
-message.attach(file)
+headers = {'Content-Type': 'application/json',
+           'x-Api-Key': api_key
+           }
 
-with smtplib.SMTP_SSL("smtp.gmail.com", port=465, context=ctx) as server:
-    server.login(sender, password)
-    server.sendmail(sender, receiver, message.as_string())
+
+response = requests.get(api_url, headers=headers).json()  # either json=data or data=data
+print(response)
+
+#printer_info = json.dumps(response)
+#printing = response['printing']
+print(response['printing'])
+

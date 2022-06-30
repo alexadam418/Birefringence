@@ -1,9 +1,10 @@
-import numpy as np
-from data_processing import find_r
-
-file_data = open(r"/home/alexadam/testdata/data_test.txt", "r")
-data = np.array(file_data.read().split(" "), float)
-test = find_r(data, 210000, 2)
-print(test)
-
-
+test = {'state': {'error': '', 'flags': {'cancelling': False, 'closedOrError': False, 'error': False,
+                                         'finishing': False, 'operational': True, 'paused': False,
+                                         'pausing': False, 'printing': False, 'ready': True, 'resuming': False,
+                                         'sdReady': False}, 'text': 'Operational'}}
+test2 = test.get('state', {}).get('flags', {}).get('sdReady')
+if test2:
+    print(1)
+else:
+    print(2)
+print(test2)

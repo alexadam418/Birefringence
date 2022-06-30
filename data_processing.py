@@ -58,9 +58,37 @@ def find_r(data, sample_rate, channel):
     return r_val
 
 
+def init_sd():
+    api_key = "78BE310B9A1C4098815EEA0ECEED0B35"
+    api_url = 'http://192.168.1.2/api/printer/command'
+
+    headers = {'Content-Type': 'application/json',
+               'x-Api-Key': api_key
+               }
+
+    data = {
+        'command': 'M22'}
+    response = requests.post(api_url, headers=headers, json=data)
+    return
+
+
+def set_sd():
+    api_key = "78BE310B9A1C4098815EEA0ECEED0B35"
+    api_url = 'http://192.168.1.2/api/printer/command'
+
+    headers = {'Content-Type': 'application/json',
+               'x-Api-Key': api_key
+               }
+
+    data = {
+        'command': 'M21'}
+    response = requests.post(api_url, headers=headers, json=data)
+    return
+
+
 def send_command(command):
-    api_key = "theapikey"
-    api_url = 'http://octopi.local/api/printer/command'
+    api_key = "78BE310B9A1C4098815EEA0ECEED0B35"
+    api_url = 'http://192.168.1.2/api/printer/command'
 
     headers = {'Content-Type': 'application/json',
                'x-Api-Key': api_key
@@ -86,8 +114,8 @@ def send_command(command):
 
 
 def is_moving():
-    api_key = "theapikey"
-    api_url = 'http://octopi.local/api/printer?exclude=temperature,sd'
+    api_key = "78BE310B9A1C4098815EEA0ECEED0B35"
+    api_url = 'http://192.168.1.2/api/printer?exclude=temperature,sd'
     headers = {'Content-Type': 'application/json',
                'x-Api-Key': api_key
                }
@@ -105,9 +133,9 @@ def is_moving():
             action = 0
             break
     if action == 1:
-        printer_info = json.load(response.json())
-        printing = printer_info["printing"]
-        return printing
+        info = response.json()
+        sd_status = info.get('state', {}).get('flags', {}).get('sdReady')
+        return sd_status
     else:
         return "error"
 

@@ -22,35 +22,41 @@ r_2 = np.zeros(npoints)
 send_command(gcode[0])
 send_command(gcode[1])
 send_command(gcode[2])
+init_sd()
 for i in range(3, npoints + 3):
     msg, act1 = send_command(gcode[i])
+    set_sd()
     print(msg)
     time.sleep(1)
     while True:
         wait = is_moving()
-        if wait == "false":
+        if wait:
             break
         else:
             time.sleep(1)
     # check if moved (needs to be written)
     r_2[i - 3] = take_measurement(2)
+    init_sd()
     if act1 == 0:
         break
 if act1 == 1:
     send_notif1(user_email)
     check = input("Have you changed it to 45 degrees? (y/n): ")
     if check.lower() == "y":
+        init_sd()
         for i in range(3, npoints + 3):
             msg, act2 = send_command(gcode[i])
+            set_sd()
             print(msg)
             time.sleep(1)
             while True:
                 wait = is_moving()
-                if wait == "false":
+                if wait:
                     break
                 else:
                     time.sleep(1)
             r_1[i - 3] = take_measurement(1)
+            init_sd()
             if act2 == 0:
                 break
         if act2 == 1:
