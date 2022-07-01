@@ -60,14 +60,14 @@ def find_r(data, sample_rate, channel):
 
 def init_sd():
     api_key = "78BE310B9A1C4098815EEA0ECEED0B35"
-    api_url = 'http://192.168.1.2/api/printer/command'
+    api_url = 'http://192.168.1.2/api/printer/sd'
 
     headers = {'Content-Type': 'application/json',
                'x-Api-Key': api_key
                }
 
     data = {
-        'command': 'M22'}
+        'command': 'release'}
     response = requests.post(api_url, headers=headers, json=data)
     return
 
@@ -193,3 +193,44 @@ def send_notif2(receivers_address):
         server.login(sender, password)
         server.sendmail(sender, receiver, message.as_string())
     return
+
+
+def send_commands(command):
+    api_key = "78BE310B9A1C4098815EEA0ECEED0B35"
+    api_url = 'http://192.168.1.2/api/printer/command'
+    commands = [command, 'M106 S10']
+
+    headers = {'Content-Type': 'application/json',
+               'x-Api-Key': api_key
+               }
+    data = {
+        'commands': commands}
+    failures = 0
+    while True:
+        response = requests.post(api_url, headers=headers, json=data)  # either json=data or data=data
+        response_code = int(response.status_code)
+        if response_code < 300:
+            message = 'Success: Command Sent'
+            action = 1
+            break
+        else:
+            time.sleep(2)
+            failures += 1
+        if failures > 10:
+            message = 'Connection Error: Cannot Send Command to Octoprint'
+            action = 0
+            break
+    return message, action
+
+
+def fan_signal():
+    with nidaqmx.Task() as task:
+        sample_num = 1000
+        task.ai_channels.add_ai_voltage_chan("Dev1/ai1")
+        task.timing.cfg_samp_clk_timing(1000, samps_per_chan=sample_num)
+        reader = AnalogSingleChannelReader(task.in_stream)
+        read_array = np.zeros(sample_num)
+        reader.read_many_sample(
+            read_array, number_of_samples_per_channel=sample_num, timeout=10.0)
+    max_val = np.max(read_array)
+    return max_val

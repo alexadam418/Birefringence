@@ -8,7 +8,7 @@ import time
 diameter = 100  # in mm
 depth = 3  # in cm
 points = 50
-start_x = 110
+start_x = 90
 start_z = 5
 user_email = "alexadam418@gmail.com"
 
@@ -22,41 +22,39 @@ r_2 = np.zeros(npoints)
 send_command(gcode[0])
 send_command(gcode[1])
 send_command(gcode[2])
-init_sd()
+send_command('M106 S0')
 for i in range(3, npoints + 3):
-    msg, act1 = send_command(gcode[i])
-    set_sd()
+    msg, act1 = send_commands(gcode[i])
     print(msg)
     time.sleep(1)
     while True:
-        wait = is_moving()
-        if wait:
+        wait = fan_signal()
+        if wait > 4:
             break
         else:
             time.sleep(1)
     # check if moved (needs to be written)
     r_2[i - 3] = take_measurement(2)
-    init_sd()
+    send_command("M106 S0")
     if act1 == 0:
         break
 if act1 == 1:
     send_notif1(user_email)
     check = input("Have you changed it to 45 degrees? (y/n): ")
     if check.lower() == "y":
-        init_sd()
+        send_command("M106 S0")
         for i in range(3, npoints + 3):
-            msg, act2 = send_command(gcode[i])
-            set_sd()
+            msg, act2 = send_commands(gcode[i])
             print(msg)
             time.sleep(1)
             while True:
-                wait = is_moving()
-                if wait:
+                wait = fan_signal()
+                if wait >= 4:
                     break
                 else:
                     time.sleep(1)
             r_1[i - 3] = take_measurement(1)
-            init_sd()
+            send_command("M106 S0")
             if act2 == 0:
                 break
         if act2 == 1:

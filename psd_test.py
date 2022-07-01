@@ -1,10 +1,8 @@
-test = {'state': {'error': '', 'flags': {'cancelling': False, 'closedOrError': False, 'error': False,
-                                         'finishing': False, 'operational': True, 'paused': False,
-                                         'pausing': False, 'printing': False, 'ready': True, 'resuming': False,
-                                         'sdReady': False}, 'text': 'Operational'}}
-test2 = test.get('state', {}).get('flags', {}).get('sdReady')
-if test2:
-    print(1)
-else:
-    print(2)
-print(test2)
+from data_processing import*
+import time
+send_command('M106 S0')
+standard = fan_signal()
+print(standard)
+send_command('M106 S10')
+measurement = fan_signal()
+print(measurement)
