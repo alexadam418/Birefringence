@@ -6,7 +6,7 @@ from matplotlib import cm
 import time
 
 diameter = 100  # in mm
-depth = 3  # in cm
+depth = 0.03  # in m
 points = 50
 start_x = 90
 start_z = 5
@@ -58,6 +58,7 @@ if act1 == 1:
             if act2 == 0:
                 break
         if act2 == 1:
+            rho = 0.5*np.arctan(r_2/r_1)
             delta = np.sqrt(r_1 ** 2 + r_2 ** 2)
             delta_n = (delta * 1.995e-6) / (2 * np.pi * depth)
             measured_birefringence = np.reshape(delta_n, (width, width))
@@ -82,6 +83,8 @@ if act1 == 1:
             plt.colorbar()
             plt.clim(0, 1e-7)
             plt.savefig("birefringence_scatter.png")
+            print("birefringence: {}").format(delta_n)
+            print("phase shift: {}").format(rho)
         else:
             print("Problem in Second Measurement")
     else:
