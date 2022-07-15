@@ -47,8 +47,8 @@ def find_r(data, sample_rate, channel):
     one_f_peak = one_f_peak * 1.5 * bandwidth
     one_f_peak = np.sqrt(one_f_peak)
     one_f_peak = one_f_peak * 2 * np.sqrt(2)
-    dc_value = np.mean(measurement)
-    a = 1.2
+    dc_value = np.mean(measurement) - 0.18
+    a = 1
     v_ratio = one_f_peak / dc_value
     r_val = 1
     if channel == 1:
@@ -142,7 +142,7 @@ def is_moving():
 
 def take_measurement(channel):
     with nidaqmx.Task() as task:
-        sample_num = 300000
+        sample_num = 100000
         task.ai_channels.add_ai_voltage_chan("Dev1/ai3")
         task.timing.cfg_samp_clk_timing(2.1e5, samps_per_chan=sample_num)
         reader = AnalogSingleChannelReader(task.in_stream)
@@ -182,7 +182,7 @@ def send_notif2(receivers_address):
     message["To"] = receiver
 
     message.attach(MIMEText("Birefringence Scan Finished", "plain"))
-    filename = r"C:\Users\jadam\PycharmProjects\pythonProject\testdata.png"
+    filename = r"C:\Users\jadam\PycharmProjects\pythonProject\birefringence.png"
     with open(filename, "rb") as f:
         file = MIMEApplication(f.read())
     disposition = f"attachment; filename={filename}"
@@ -234,3 +234,5 @@ def fan_signal():
             read_array, number_of_samples_per_channel=sample_num, timeout=10.0)
     max_val = np.max(read_array)
     return max_val
+
+

@@ -7,8 +7,8 @@ import time
 
 diameter = 100  # in mm
 depth = 0.03  # in m
-points = 50
-start_x = 90
+points = 1000
+start_x = 115
 start_z = 5
 user_email = "alexadam418@gmail.com"
 
@@ -29,7 +29,7 @@ for i in range(3, npoints + 3):
     time.sleep(1)
     while True:
         wait = fan_signal()
-        if wait > 4:
+        if wait >= 4:
             break
         else:
             time.sleep(1)
@@ -66,7 +66,7 @@ if act1 == 1:
             gcode, x_loc, z_loc, width = create_gcode(points, diameter, 0, -50)
             x_values = np.reshape(x_loc, npoints)
             z_values = np.reshape(z_loc, npoints)
-            newpoints = 500
+            newpoints = np.floor(np.sqrt(12500000/points))
             xq = np.linspace(box_start[0], box_start[0] + 20 + diameter, newpoints)
             zq = np.linspace(box_start[1], box_start[1] + 20 + diameter, newpoints)
             interp_data = interpolate.interp2d(x_values, z_values, measured_birefringence, kind="linear")
@@ -75,16 +75,17 @@ if act1 == 1:
             plt.subplot()
             plt.pcolormesh(xq, zq, plot_data, cmap=cm.jet)
             plt.colorbar()
-            plt.clim(0, 1e-7)
+            plt.clim(0, 5e-7)
             plt.savefig("birefringence.png")
             send_notif2(user_email)
             plt.figure(2)
             plt.scatter(x_loc, z_loc, c=np.flip(delta_n), cmap=cm.jet)
             plt.colorbar()
-            plt.clim(0, 1e-7)
+            plt.clim(0, 5e-7)
             plt.savefig("birefringence_scatter.png")
-            print("birefringence: {}").format(delta_n)
-            print("phase shift: {}").format(rho)
+            np.savetxt(fname="birefringence.txt", X=delta_n, newline="\n")
+            np.savetxt(fname="phase_shift.txt", X=rho, newline="\n")
+
         else:
             print("Problem in Second Measurement")
     else:
