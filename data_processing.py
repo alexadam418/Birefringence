@@ -4,7 +4,6 @@ from scipy import special
 import nidaqmx
 from nidaqmx.stream_readers import AnalogSingleChannelReader
 import time
-import json
 import requests
 import smtplib
 import ssl
@@ -58,34 +57,6 @@ def find_r(data, sample_rate, channel):
     return r_val
 
 
-def init_sd():
-    api_key = "78BE310B9A1C4098815EEA0ECEED0B35"
-    api_url = 'http://192.168.1.2/api/printer/sd'
-
-    headers = {'Content-Type': 'application/json',
-               'x-Api-Key': api_key
-               }
-
-    data = {
-        'command': 'release'}
-    response = requests.post(api_url, headers=headers, json=data)
-    return
-
-
-def set_sd():
-    api_key = "78BE310B9A1C4098815EEA0ECEED0B35"
-    api_url = 'http://192.168.1.2/api/printer/command'
-
-    headers = {'Content-Type': 'application/json',
-               'x-Api-Key': api_key
-               }
-
-    data = {
-        'command': 'M21'}
-    response = requests.post(api_url, headers=headers, json=data)
-    return
-
-
 def send_command(command):
     api_key = "78BE310B9A1C4098815EEA0ECEED0B35"
     api_url = 'http://192.168.1.2/api/printer/command'
@@ -111,33 +82,6 @@ def send_command(command):
             action = 0
             break
     return message, action
-
-
-def is_moving():
-    api_key = "78BE310B9A1C4098815EEA0ECEED0B35"
-    api_url = 'http://192.168.1.2/api/printer?exclude=temperature,sd'
-    headers = {'Content-Type': 'application/json',
-               'x-Api-Key': api_key
-               }
-    failures = 0
-    while True:
-        response = requests.get(api_url, headers=headers)  # either json=data or data=data
-        response_code = int(response.status_code)
-        if response_code < 300:
-            action = 1
-            break
-        else:
-            time.sleep(2)
-            failures += 1
-        if failures > 10:
-            action = 0
-            break
-    if action == 1:
-        info = response.json()
-        sd_status = info.get('state', {}).get('flags', {}).get('sdReady')
-        return sd_status
-    else:
-        return "error"
 
 
 def take_measurement(channel):
@@ -236,3 +180,58 @@ def fan_signal():
     return max_val
 
 
+def send_notif3(receivers_address):
+    ctx = ssl.create_default_context()
+    password = "qojxkexwarkaubtm"
+    sender = "birefringenceprogram@gmail.com"
+    receiver = receivers_address
+    message = """\
+    From: "Birefringence Program" <birefringenceprogram@gmail.com>
+    Subject: Program Failed
+
+    Scan has failed.
+    """
+
+    with smtplib.SMTP_SSL("smtp.gmail.com", port=465, context=ctx) as server:
+        server.login(sender, password)
+        server.sendmail(sender, receiver, message)
+    return
+
+
+def fan_signal_check():
+    max_val_high = np.zeros(5)
+    max_val_low = np.zeros(5)
+    send_command("M106 S10")
+    for i in range(5):
+        with nidaqmx.Task() as task:
+            sample_num = 1000
+            task.ai_channels.add_ai_voltage_chan("Dev1/ai1")
+            task.timing.cfg_samp_clk_timing(1000, samps_per_chan=sample_num)
+            reader = AnalogSingleChannelReader(task.in_stream)
+            read_array = np.zeros(sample_num)
+            reader.read_many_sample(
+                read_array, number_of_samples_per_channel=sample_num, timeout=10.0)
+        max_val_high[i] = np.max(read_array)
+    send_command("M106 S0")
+    for i in range(5):
+        with nidaqmx.Task() as task:
+            sample_num = 1000
+            task.ai_channels.add_ai_voltage_chan("Dev1/ai1")
+            task.timing.cfg_samp_clk_timing(1000, samps_per_chan=sample_num)
+            reader = AnalogSingleChannelReader(task.in_stream)
+            read_array = np.zeros(sample_num)
+            reader.read_many_sample(
+                read_array, number_of_samples_per_channel=sample_num, timeout=10.0)
+        max_val_low[i] = np.max(read_array)
+    fan_threshold = 4
+    if np.max(max_val_low) < 4:
+        if np.min(max_val_high) > 4:
+            check = 1
+        else:
+            check = 0
+    else:
+        check = 0
+    if check == 0:
+        fan_threshold = (np.min(max_val_high) - np.max(max_val_low))/2
+        print("New fan signal threshold defined as {}".format(fan_threshold))
+    return fan_threshold
