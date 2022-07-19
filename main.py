@@ -45,7 +45,10 @@ if begin.lower() == "y":
             break
     send_command("G1 X100 Z50 F300")  # Moves test mass so alignment check can be conducted
     if act1 == 1:
-        send_notif1(user_email)
+        try:
+            send_notif1(user_email)
+        except:
+            print("Error sending first email")
         check = input("Have you changed it to 0 degrees? (y/n): ")
         if check.lower() == "y":
             send_command("M106 S0")
@@ -75,15 +78,17 @@ if begin.lower() == "y":
                 newpoints = np.floor(np.sqrt(12500000/points))  # ensures that there are not too many points for interp
                 xq = np.linspace(box_start[0], box_start[0] + 20 + diameter, newpoints)
                 zq = np.linspace(box_start[1], box_start[1] + 20 + diameter, newpoints)
-                interp_data = interpolate.interp2d(x_values, z_values, measured_birefringence, kind="linear")
-                plot_data = interp_data(xq, zq)
-                plt.figure(1)
-                plt.subplot()
-                plt.pcolormesh(xq, zq, plot_data, cmap=cm.jet)
-                plt.colorbar()
-                plt.clim(0, 5e-7)
-                plt.savefig("birefringence.png")  # saves interpolated figure
-                send_notif2(user_email)
+                try:
+                    interp_data = interpolate.interp2d(x_values, z_values, measured_birefringence, kind="linear")
+                    plot_data = interp_data(xq, zq)
+                    plt.figure(1)
+                    plt.subplot()
+                    plt.pcolormesh(xq, zq, plot_data, cmap=cm.jet)
+                    plt.colorbar()
+                    plt.clim(0, 5e-7)
+                    plt.savefig("birefringence.png")  # saves interpolated figure
+                except:
+                    print("Error in interpolated plot")
                 plt.figure(2)
                 plt.scatter(x_loc, z_loc, c=np.flip(delta_n), cmap=cm.jet)
                 plt.colorbar()
@@ -91,6 +96,10 @@ if begin.lower() == "y":
                 plt.savefig("birefringence_scatter.png")  # saves scatter plot of data
                 np.savetxt(fname="birefringence.txt", X=delta_n, newline="\n")  # saves data to txt file
                 np.savetxt(fname="phase_shift.txt", X=rho, newline="\n")
+                try:
+                    send_notif2(user_email)
+                except:
+                    print("Error sending second email")
                 success = 1
 
             else:

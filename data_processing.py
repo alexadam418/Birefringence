@@ -126,7 +126,7 @@ def send_notif2(receivers_address):
     message["To"] = receiver
 
     message.attach(MIMEText("Birefringence Scan Finished", "plain"))
-    filename = r"C:\Users\jadam\PycharmProjects\pythonProject\birefringence.png"
+    filename = "birefringence.png"
     with open(filename, "rb") as f:
         file = MIMEApplication(f.read())
     disposition = f"attachment; filename={filename}"
