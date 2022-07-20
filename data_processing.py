@@ -7,6 +7,7 @@ import time
 import requests
 import smtplib
 import ssl
+import matplotlib.pyplot as plt
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
@@ -27,6 +28,13 @@ def create_gcode(point, diameter, start_x, start_z):
         for j in range(0, width):
             gcode_str = "G1 X{:.2f} Z{:.2f} F300"
             gcode.append(gcode_str.format(scan_rx[i, j], scan_rz[i, j]))
+    plt.figure(3)
+    plt.plot(scan_rx, scan_rz, 'x')
+    ang = np.linspace(0.01, 2*np.pi, 100)
+    xp = 0.5*diameter*np.cos(ang)
+    yp = 0.5*diameter*np.sin(ang)
+    plt.plot(xp+start_x, yp+start_z+diameter/2, 'r')
+    plt.savefig("gcode.png")
     return gcode, scan_rx, scan_rz, width
 
 
