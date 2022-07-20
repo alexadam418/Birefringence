@@ -7,7 +7,7 @@ import time
 
 diameter = 100  # in mm
 depth = 0.03  # in m
-points = 1000
+points = 2000
 start_x = 115
 start_z = 5
 user_email = "alexadam418@gmail.com"
@@ -73,20 +73,21 @@ if begin.lower() == "y":
                 measured_birefringence = np.reshape(delta_n, (width, width))
                 measured_birefringence = np.rot90(measured_birefringence, 2, (0, 1))  # rotates scan correct way
                 gcode, x_loc, z_loc, width = create_gcode(points, diameter, 0, -50)
-                x_values = np.reshape(x_loc, npoints)
-                z_values = np.reshape(z_loc, npoints)
-                newpoints = np.floor(np.sqrt(12500000/points))  # ensures that there are not too many points for interp
+                x_values = np.reshape(x_loc, points)
+                z_values = np.reshape(z_loc, points)
+                newpoints = 500 # ensures that there are not too many points for interp
                 xq = np.linspace(box_start[0], box_start[0] + 20 + diameter, newpoints)
                 zq = np.linspace(box_start[1], box_start[1] + 20 + diameter, newpoints)
                 try:
-                    interp_data = interpolate.interp2d(x_values, z_values, measured_birefringence, kind="linear")
-                    plot_data = interp_data(xq, zq)
                     plt.figure(1)
-                    plt.subplot()
-                    plt.pcolormesh(xq, zq, plot_data, cmap=cm.jet)
+                    xq, zq = np.meshgrid(xq, zq)
+                    combined = np.vstack((x_values, z_values)).T
+                    flipped = np.flip(delta_n)
+                    grid_1 = interpolate.griddata(combined, flipped, (xq, zq), method='linear')
+                    plt.imshow(grid_1, origin='lower', cmap="jet", extent=[-60, 60, -60, 60])
                     plt.colorbar()
                     plt.clim(0, 5e-7)
-                    plt.savefig("birefringence.png")  # saves interpolated figure
+                    plt.savefig("birefringence_interp.png")
                 except:
                     print("Error in interpolated plot")
                 plt.figure(2)
