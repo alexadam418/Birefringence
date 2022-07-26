@@ -73,9 +73,9 @@ if begin.lower() == "y":
                 measured_birefringence = np.reshape(delta_n, (width, width))
                 measured_birefringence = np.rot90(measured_birefringence, 2, (0, 1))  # rotates scan correct way
                 gcode, x_loc, z_loc, width = create_gcode(points, diameter, 0, -50)
-                x_values = np.reshape(x_loc, points)
-                z_values = np.reshape(z_loc, points)
-                newpoints = 500 # ensures that there are not too many points for interp
+                x_values = np.reshape(x_loc, npoints)
+                z_values = np.reshape(z_loc, npoints)
+                newpoints = 500  # ensures that there are not too many points for interp
                 xq = np.linspace(box_start[0], box_start[0] + 20 + diameter, newpoints)
                 zq = np.linspace(box_start[1], box_start[1] + 20 + diameter, newpoints)
                 try:
@@ -86,14 +86,14 @@ if begin.lower() == "y":
                     grid_1 = interpolate.griddata(combined, flipped, (xq, zq), method='linear')
                     plt.imshow(grid_1, origin='lower', cmap="jet", extent=[-60, 60, -60, 60])
                     plt.colorbar()
-                    plt.clim(0, 5e-7)
+                    plt.clim(0, 5e-8)
                     plt.savefig("birefringence_interp.png")
                 except:
                     print("Error in interpolated plot")
                 plt.figure(2)
                 plt.scatter(x_loc, z_loc, c=np.flip(delta_n), cmap=cm.jet)
                 plt.colorbar()
-                plt.clim(0, 5e-7)
+                plt.clim(0, 5e-8)
                 plt.savefig("birefringence_scatter.png")  # saves scatter plot of data
                 np.savetxt(fname="birefringence.txt", X=delta_n, newline="\n")  # saves data to txt file
                 np.savetxt(fname="phase_shift.txt", X=rho, newline="\n")
