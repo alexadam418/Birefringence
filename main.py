@@ -10,7 +10,8 @@ depth = 0.03  # in m
 points = 2000
 start_x = 115
 start_z = 5
-user_email = "alexadam418@gmail.com"
+user_email1 = "alexadam418@gmail.com"
+user_email2 = "22595565@student.uwa.edu.au"
 
 success = 0
 box_start = [-60, -60]
@@ -46,7 +47,8 @@ if begin.lower() == "y":
     send_command("G1 X100 Z50 F300")  # Moves test mass so alignment check can be conducted
     if act1 == 1:
         try:
-            send_notif1(user_email)
+            send_notif1(user_email1)
+            send_notif1(user_email2)
         except:
             print("Error sending first email")
         check = input("Have you changed it to 0 degrees? (y/n): ")
@@ -98,7 +100,8 @@ if begin.lower() == "y":
                 np.savetxt(fname="birefringence.txt", X=delta_n, newline="\n")  # saves data to txt file
                 np.savetxt(fname="phase_shift.txt", X=rho, newline="\n")
                 try:
-                    send_notif2(user_email)
+                    send_notif2(user_email1)
+                    send_notif2(user_email2)
                 except:
                     print("Error sending second email")
                 success = 1

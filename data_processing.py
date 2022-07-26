@@ -141,6 +141,22 @@ def send_notif2(receivers_address):
     file.add_header("Content-Disposition", disposition)
     message.attach(file)
 
+    message.attach(MIMEText("Birefringence Scan Finished", "plain"))
+    filename = "birefringence_scatter.png"
+    with open(filename, "rb") as f:
+        file = MIMEApplication(f.read())
+    disposition = f"attachment; filename={filename}"
+    file.add_header("Content-Disposition", disposition)
+    message.attach(file)
+
+    message.attach(MIMEText("Birefringence Scan Finished", "plain"))
+    filename = "birefringence.txt"
+    with open(filename, "rb") as f:
+        file = MIMEApplication(f.read())
+    disposition = f"attachment; filename={filename}"
+    file.add_header("Content-Disposition", disposition)
+    message.attach(file)
+
     with smtplib.SMTP_SSL("smtp.gmail.com", port=465, context=ctx) as server:
         server.login(sender, password)
         server.sendmail(sender, receiver, message.as_string())
@@ -220,6 +236,7 @@ def fan_signal_check():
             reader.read_many_sample(
                 read_array, number_of_samples_per_channel=sample_num, timeout=10.0)
         max_val_high[i] = np.max(read_array)
+    print(max_val_high)
     send_command("M106 S0")
     for i in range(5):
         with nidaqmx.Task() as task:
@@ -231,6 +248,7 @@ def fan_signal_check():
             reader.read_many_sample(
                 read_array, number_of_samples_per_channel=sample_num, timeout=10.0)
         max_val_low[i] = np.max(read_array)
+    print(max_val_low)
     fan_threshold = 4
     if np.max(max_val_low) < 4:
         if np.min(max_val_high) > 4:
@@ -240,6 +258,6 @@ def fan_signal_check():
     else:
         check = 0
     if check == 0:
-        fan_threshold = (np.min(max_val_high) - np.max(max_val_low))/2
+        fan_threshold = (np.min(max_val_high) - np.max(max_val_low))/2 + max_val_low
         print("New fan signal threshold defined as {}".format(fan_threshold))
     return fan_threshold
