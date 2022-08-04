@@ -113,4 +113,4 @@ if begin.lower() == "y":
     else:
         print("Problem in First Measurement")
     if success == 0:
-        send_notif3(user_email)
+        send_notif3(user_email1)

@@ -13,6 +13,12 @@ from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 
 
+def nearest_num(array, num):
+    dist = np.abs(array - num)
+    index = np.where(np.amin(dist))
+    return index
+
+
 def create_gcode(point, diameter, start_x, start_z):
     margin = 20
     gcode = ["G90", "M82", "G21"]
@@ -50,7 +56,10 @@ def find_r(data, sample_rate, channel):
     f, pxx = signal.welch(x, sample_rate, window='hann', nperseg=sampfft, noverlap=ovl)
     bandwidth = f[2] - f[1]
     fifty_range = pxx[round(49000 / bandwidth):round(51000 / bandwidth)]
-    one_f_peak = np.max(fifty_range)
+    index = int(50116/bandwidth)
+    peaks = np.array(signal.find_peaks(fifty_range))
+    one_f_index = nearest_num(peaks, index)
+    one_f_peak = fifty_range[one_f_index]
     one_f_peak = one_f_peak * 1.5 * bandwidth
     one_f_peak = np.sqrt(one_f_peak)
     one_f_peak = one_f_peak * 2 * np.sqrt(2)
@@ -94,14 +103,14 @@ def send_command(command):
 
 def take_measurement(channel):
     with nidaqmx.Task() as task:
-        sample_num = 100000
+        sample_num = 420000
         task.ai_channels.add_ai_voltage_chan("Dev1/ai3")
-        task.timing.cfg_samp_clk_timing(2.1e5, samps_per_chan=sample_num)
+        task.timing.cfg_samp_clk_timing(2.8e5, samps_per_chan=sample_num)
         reader = AnalogSingleChannelReader(task.in_stream)
         read_array = np.zeros(sample_num)
         reader.read_many_sample(
             read_array, number_of_samples_per_channel=sample_num, timeout=10.0)
-    r_value = find_r(read_array, 210000, channel)
+    r_value = find_r(read_array, 420000, channel)
     return r_value
 
 
