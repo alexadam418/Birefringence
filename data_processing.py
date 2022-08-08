@@ -62,7 +62,7 @@ def find_r(data, sample_rate, channel):
         peaks, other = signal.find_peaks(fifty_range, height=0)
         peaks = np.array(peaks)
         peaks_index, dist = nearest_num(peaks, index)
-        if dist <= 5:
+        if dist > 5:
             short_range = pxx[round(50110 / bandwidth):round(50120 / bandwidth)]
             one_f_peak = np.amax(short_range)
         else:
