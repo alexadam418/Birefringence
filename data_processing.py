@@ -15,7 +15,10 @@ from email.mime.multipart import MIMEMultipart
 
 def nearest_num(array, num):
     dist = np.abs(array - num)
-    index = np.where(np.amin(dist))
+    print(dist)
+    lowest = np.amin(dist)
+    print(lowest)
+    index = np.where(dist == lowest)
     return index
 
 
@@ -56,9 +59,10 @@ def find_r(data, sample_rate, channel):
     f, pxx = signal.welch(x, sample_rate, window='hann', nperseg=sampfft, noverlap=ovl)
     bandwidth = f[2] - f[1]
     fifty_range = pxx[round(49000 / bandwidth):round(51000 / bandwidth)]
-    index = int(50116/bandwidth)
-    peaks = np.array(signal.find_peaks(fifty_range))
-    one_f_index = nearest_num(peaks, index)
+    index = round(50116/bandwidth)
+    peaks = np.array(signal.find_peaks(fifty_range, height=0))
+    peaks_index = nearest_num(peaks, index)
+    one_f_index = peaks[peaks_index]
     one_f_peak = fifty_range[one_f_index]
     one_f_peak = one_f_peak * 1.5 * bandwidth
     one_f_peak = np.sqrt(one_f_peak)
