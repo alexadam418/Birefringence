@@ -15,11 +15,9 @@ from email.mime.multipart import MIMEMultipart
 
 def nearest_num(array, num):
     dist = np.abs(array - num)
-    print(dist)
     lowest = np.amin(dist)
-    print(lowest)
     index = np.where(dist == lowest)
-    return index
+    return index, lowest
 
 
 def create_gcode(point, diameter, start_x, start_z):
@@ -39,10 +37,10 @@ def create_gcode(point, diameter, start_x, start_z):
             gcode.append(gcode_str.format(scan_rx[i, j], scan_rz[i, j]))
     plt.figure(3)
     plt.plot(scan_rx, scan_rz, 'x')
-    ang = np.linspace(0.01, 2*np.pi, 100)
-    xp = 0.5*diameter*np.cos(ang)
-    yp = 0.5*diameter*np.sin(ang)
-    plt.plot(xp+start_x, yp+start_z+diameter/2, 'r')
+    ang = np.linspace(0.01, 2 * np.pi, 100)
+    xp = 0.5 * diameter * np.cos(ang)
+    yp = 0.5 * diameter * np.sin(ang)
+    plt.plot(xp + start_x, yp + start_z + diameter / 2, 'r')
     plt.savefig("gcode.png")
     return gcode, scan_rx, scan_rz, width
 
@@ -59,11 +57,20 @@ def find_r(data, sample_rate, channel):
     f, pxx = signal.welch(x, sample_rate, window='hann', nperseg=sampfft, noverlap=ovl)
     bandwidth = f[2] - f[1]
     fifty_range = pxx[round(49000 / bandwidth):round(51000 / bandwidth)]
-    index = round(50116/bandwidth)
-    peaks = np.array(signal.find_peaks(fifty_range, height=0))
-    peaks_index = nearest_num(peaks, index)
-    one_f_index = peaks[peaks_index]
-    one_f_peak = fifty_range[one_f_index]
+    index = round(50116 / bandwidth)
+    try:
+        peaks, other = signal.find_peaks(fifty_range, height=0)
+        peaks = np.array(peaks)
+        peaks_index, dist = nearest_num(peaks, index)
+        if dist <= 5:
+            short_range = pxx[round(50110 / bandwidth):round(50120 / bandwidth)]
+            one_f_peak = np.amax(short_range)
+        else:
+            one_f_index = peaks[peaks_index]
+            one_f_peak = fifty_range[one_f_index]
+    except:
+        short_range = pxx[round(50110 / bandwidth):round(50120 / bandwidth)]
+        one_f_peak = np.amax(short_range)
     one_f_peak = one_f_peak * 1.5 * bandwidth
     one_f_peak = np.sqrt(one_f_peak)
     one_f_peak = one_f_peak * 2 * np.sqrt(2)
@@ -107,14 +114,15 @@ def send_command(command):
 
 def take_measurement(channel):
     with nidaqmx.Task() as task:
-        sample_num = 420000
+        sample_num = 4.2e5
+        sample_rate = 2.8e5
         task.ai_channels.add_ai_voltage_chan("Dev1/ai3")
-        task.timing.cfg_samp_clk_timing(2.8e5, samps_per_chan=sample_num)
+        task.timing.cfg_samp_clk_timing(sample_rate, samps_per_chan=sample_num)
         reader = AnalogSingleChannelReader(task.in_stream)
         read_array = np.zeros(sample_num)
         reader.read_many_sample(
             read_array, number_of_samples_per_channel=sample_num, timeout=10.0)
-    r_value = find_r(read_array, 420000, channel)
+    r_value = find_r(read_array, sample_rate, channel)
     return r_value
 
 
@@ -271,6 +279,6 @@ def fan_signal_check():
     else:
         check = 0
     if check == 0:
-        fan_threshold = (np.min(max_val_high) - np.max(max_val_low))/2 + max_val_low
+        fan_threshold = (np.min(max_val_high) - np.max(max_val_low)) / 2 + max_val_low
         print("New fan signal threshold defined as {}".format(fan_threshold))
     return fan_threshold
