@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
-
+from datetime import datetime
 
 def nearest_num(array, num):
     dist = np.abs(array - num)
@@ -144,7 +144,7 @@ def send_notif1(receivers_address):
     return
 
 
-def send_notif2(receivers_address):
+def send_notif2(receivers_address, file_name1, file_name2, file_name3):
     ctx = ssl.create_default_context()
     password = "qojxkexwarkaubtm"
     sender = "birefringenceprogram@gmail.com"
@@ -155,26 +155,26 @@ def send_notif2(receivers_address):
     message["To"] = receiver
 
     message.attach(MIMEText("Birefringence Scan Finished", "plain"))
-    filename = "birefringence_interp.png"
-    with open(filename, "rb") as f:
+    file_name1 = "birefringence_interp.png"
+    with open(file_name1, "rb") as f:
         file = MIMEApplication(f.read())
-    disposition = f"attachment; filename={filename}"
+    disposition = f"attachment; filename={file_name1}"
     file.add_header("Content-Disposition", disposition)
     message.attach(file)
 
     message.attach(MIMEText("Birefringence Scan Finished", "plain"))
-    filename = "birefringence_scatter.png"
-    with open(filename, "rb") as f:
+    file_name2 = "birefringence_scatter.png"
+    with open(file_name2, "rb") as f:
         file = MIMEApplication(f.read())
-    disposition = f"attachment; filename={filename}"
+    disposition = f"attachment; filename={file_name2}"
     file.add_header("Content-Disposition", disposition)
     message.attach(file)
 
     message.attach(MIMEText("Birefringence Scan Finished", "plain"))
-    filename = "birefringence.txt"
-    with open(filename, "rb") as f:
+    file_name3 = "birefringence.txt"
+    with open(file_name3, "rb") as f:
         file = MIMEApplication(f.read())
-    disposition = f"attachment; filename={filename}"
+    disposition = f"attachment; filename={file_name3}"
     file.add_header("Content-Disposition", disposition)
     message.attach(file)
 
@@ -282,3 +282,13 @@ def fan_signal_check():
         fan_threshold = (np.min(max_val_high) - np.max(max_val_low)) / 2 + max_val_low
         print("New fan signal threshold defined as {}".format(fan_threshold))
     return fan_threshold
+
+
+def file_name(points, keyword, file_ext):
+    now = datetime.now()
+    time_format = now.strftime("%Y-%b-%d-%H%Mhrs")
+    other = "-{}-pts"
+    other2 = other.format(str(points))
+    name = time_format+other2+"-"+keyword+file_ext
+    return name
+
