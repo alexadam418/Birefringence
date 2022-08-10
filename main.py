@@ -42,6 +42,7 @@ if begin.lower() == "y":
         # check if moved (needs to be written)
         r_1[i - 3] = take_measurement(1)  # takes data and calculates the "r" value
         send_command("M106 S0")  # re-initalises fan signal to off
+        print("Measurement {} of {}".format(i, npoints))
         if act1 == 0:
             break
     send_command("G1 X100 Z50 F300")  # Moves test mass so alignment check can be conducted
