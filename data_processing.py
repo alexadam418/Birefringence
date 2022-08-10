@@ -155,7 +155,6 @@ def send_notif2(receivers_address, file_name1, file_name2, file_name3):
     message["To"] = receiver
 
     message.attach(MIMEText("Birefringence Scan Finished", "plain"))
-    file_name1 = "birefringence_interp.png"
     with open(file_name1, "rb") as f:
         file = MIMEApplication(f.read())
     disposition = f"attachment; filename={file_name1}"
@@ -163,7 +162,6 @@ def send_notif2(receivers_address, file_name1, file_name2, file_name3):
     message.attach(file)
 
     message.attach(MIMEText("Birefringence Scan Finished", "plain"))
-    file_name2 = "birefringence_scatter.png"
     with open(file_name2, "rb") as f:
         file = MIMEApplication(f.read())
     disposition = f"attachment; filename={file_name2}"
@@ -171,7 +169,6 @@ def send_notif2(receivers_address, file_name1, file_name2, file_name3):
     message.attach(file)
 
     message.attach(MIMEText("Birefringence Scan Finished", "plain"))
-    file_name3 = "birefringence.txt"
     with open(file_name3, "rb") as f:
         file = MIMEApplication(f.read())
     disposition = f"attachment; filename={file_name3}"
