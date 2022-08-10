@@ -80,6 +80,7 @@ if begin.lower() == "y":
                 newpoints = 500  # ensures that there are not too many points for interp
                 xq = np.linspace(box_start[0], box_start[0] + 20 + diameter, newpoints)
                 zq = np.linspace(box_start[1], box_start[1] + 20 + diameter, newpoints)
+                file_name1 = "birefringence.png"
                 try:
                     plt.figure(1)
                     xq, zq = np.meshgrid(xq, zq)
@@ -89,19 +90,23 @@ if begin.lower() == "y":
                     plt.imshow(grid_1, origin='lower', cmap="jet", extent=[-60, 60, -60, 60])
                     plt.colorbar()
                     plt.clim(0, 5e-8)
-                    plt.savefig("birefringence_interp.png")
+                    file_name1 = file_name(npoints, "interp", ".png")
+                    plt.savefig(file_name1)
                 except:
                     print("Error in interpolated plot")
                 plt.figure(2)
                 plt.scatter(x_loc, z_loc, c=np.flip(delta_n), cmap=cm.jet)
                 plt.colorbar()
                 plt.clim(0, 5e-8)
-                plt.savefig("birefringence_scatter.png")  # saves scatter plot of data
-                np.savetxt(fname="birefringence.txt", X=delta_n, newline="\n")  # saves data to txt file
-                np.savetxt(fname="phase_shift.txt", X=rho, newline="\n")
+                file_name2 = file_name(npoints, "scatter", ".png")
+                plt.savefig("file_name2")  # saves scatter plot of data
+                text_file_1 = file_name(npoints, "biref-data", ".txt")
+                text_file_2 = file_name(npoints, "phase_shift", ".txt")
+                np.savetxt(fname="text_file_1", X=delta_n, newline="\n")
+                np.savetxt(fname="text_file_2", X=rho, newline="\n")
                 try:
-                    send_notif2(user_email1)
-                    send_notif2(user_email2)
+                    send_notif2(user_email1, file_name1, file_name2, text_file_1)
+                    send_notif2(user_email2, file_name1, file_name2, text_file_1)
                 except:
                     print("Error sending second email")
                 success = 1
