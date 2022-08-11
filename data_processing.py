@@ -114,8 +114,8 @@ def send_command(command):
 
 def take_measurement(channel):
     with nidaqmx.Task() as task:
-        sample_num = 4.2e5
-        sample_rate = 2.8e5
+        sample_num = 1500000
+        sample_rate = 3e5
         task.ai_channels.add_ai_voltage_chan("Dev1/ai3")
         task.timing.cfg_samp_clk_timing(sample_rate, samps_per_chan=sample_num)
         reader = AnalogSingleChannelReader(task.in_stream)

@@ -42,7 +42,7 @@ if begin.lower() == "y":
         # check if moved (needs to be written)
         r_1[i - 3] = take_measurement(1)  # takes data and calculates the "r" value
         send_command("M106 S0")  # re-initalises fan signal to off
-        print("Measurement {} of {}".format(i, npoints))
+        print("Measurement {} of {}".format(i-3, npoints))
         if act1 == 0:
             break
     send_command("G1 X100 Z50 F300")  # Moves test mass so alignment check can be conducted
@@ -100,11 +100,11 @@ if begin.lower() == "y":
                 plt.colorbar()
                 plt.clim(0, 5e-8)
                 file_name2 = file_name(npoints, "scatter", ".png")
-                plt.savefig("file_name2")  # saves scatter plot of data
+                plt.savefig(file_name2)  # saves scatter plot of data
                 text_file_1 = file_name(npoints, "biref-data", ".txt")
                 text_file_2 = file_name(npoints, "phase_shift", ".txt")
-                np.savetxt(fname="text_file_1", X=delta_n, newline="\n")
-                np.savetxt(fname="text_file_2", X=rho, newline="\n")
+                np.savetxt(fname=text_file_1, X=delta_n, newline="\n")
+                np.savetxt(fname=text_file_2, X=rho, newline="\n")
                 try:
                     send_notif2(user_email1, file_name1, file_name2, text_file_1)
                     send_notif2(user_email2, file_name1, file_name2, text_file_1)
