@@ -54,26 +54,13 @@ def find_r(data, sample_rate, channel):
     x = np.abs(measurement)
     sampfft = 2 ** nextpow2(len(x) / 10)
     ovl = sampfft // 2
-    f, pxx = signal.welch(x, sample_rate, window='hann', nperseg=sampfft, noverlap=ovl)
+    f, pxx = signal.welch(x, sample_rate, window='hann', nperseg=sampfft, noverlap=ovl, scaling='density')
     bandwidth = f[2] - f[1]
     fifty_range = pxx[round(49000 / bandwidth):round(51000 / bandwidth)]
-    index = round(50116 / bandwidth)
-    try:
-        peaks, other = signal.find_peaks(fifty_range, height=0)
-        peaks = np.array(peaks)
-        peaks_index, dist = nearest_num(peaks, index)
-        if dist > round(5/bandwidth):
-            short_range = pxx[round(50110 / bandwidth):round(50120 / bandwidth)]
-            one_f_peak = np.amax(short_range)
-        else:
-            one_f_index = peaks[peaks_index]
-            one_f_peak = fifty_range[one_f_index]
-    except:
-        short_range = pxx[round(50110 / bandwidth):round(50120 / bandwidth)]
-        one_f_peak = np.amax(short_range)
+    one_f_peak = np.amax(fifty_range)
     one_f_peak = one_f_peak * 1.5 * bandwidth
     one_f_peak = np.sqrt(one_f_peak)
-    one_f_peak = one_f_peak * 2 * np.sqrt(2)
+    one_f_peak = one_f_peak * np.sqrt(2)
     dc_value = np.mean(measurement) - 0.18
     a = 1
     v_ratio = one_f_peak / dc_value
@@ -114,8 +101,8 @@ def send_command(command):
 
 def take_measurement(channel):
     with nidaqmx.Task() as task:
-        sample_num = 1500000
-        sample_rate = 3e5
+        sample_num = 2097152
+        sample_rate = 8e5
         task.ai_channels.add_ai_voltage_chan("Dev1/ai3")
         task.timing.cfg_samp_clk_timing(sample_rate, samps_per_chan=sample_num)
         reader = AnalogSingleChannelReader(task.in_stream)
@@ -256,6 +243,7 @@ def fan_signal_check():
         max_val_high[i] = np.max(read_array)
     print(max_val_high)
     send_command("M106 S0")
+    time.sleep(3)
     for i in range(5):
         with nidaqmx.Task() as task:
             sample_num = 1000
@@ -276,7 +264,7 @@ def fan_signal_check():
     else:
         check = 0
     if check == 0:
-        fan_threshold = (np.min(max_val_high) - np.max(max_val_low)) / 2 + max_val_low
+        fan_threshold = (np.min(max_val_high) - np.max(max_val_low)) / 2 + np.max(max_val_low)
         print("New fan signal threshold defined as {}".format(fan_threshold))
     return fan_threshold
 

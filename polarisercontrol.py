@@ -32,6 +32,8 @@ def homepolariser():
         config.UpdateCurrentConfiguration()
         controller.SetSettings(controller.MotorDeviceSettings, True, False)
         controller.Home(60000)
+        controller.StopPolling()
+        controller.Disconnect(False)
 
 
 

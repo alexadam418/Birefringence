@@ -1,8 +1,6 @@
-from data_processing import*
-import time
-send_command('M106 S0')
-standard = fan_signal()
-print(standard)
-send_command('M106 S10')
-measurement = fan_signal()
-print(measurement)
+from polarisercontrol import *
+from data_processing import *
+import numpy as np
+
+send_command("G1 X120 Z51 F300")
+movepolariser(45)
